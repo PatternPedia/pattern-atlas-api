@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.patternpedia.api.entities.PatternView;
+import com.patternpedia.api.rest.model.PatternViewGraphModel;
 import com.patternpedia.api.service.PatternViewService;
 
 import org.apache.commons.text.CaseUtils;
@@ -40,8 +42,11 @@ public class PatternViewController {
 
     private PatternViewService patternViewService;
 
-    public PatternViewController(PatternViewService patternViewService) {
+    private ObjectMapper objectMapper;
+
+    public PatternViewController(PatternViewService patternViewService, ObjectMapper objectMapper) {
         this.patternViewService = patternViewService;
+        this.objectMapper = objectMapper;
     }
 
     private static List<Link> getPatternViewCollectionLinks() {
@@ -128,6 +133,43 @@ public class PatternViewController {
     @DeleteMapping(value = "/{patternViewId}")
     public ResponseEntity<?> deletePatternView(@PathVariable UUID patternViewId) {
         this.patternViewService.deletePatternView(patternViewId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(value = "/{patternViewId}/graph")
+    ResponseEntity<?> getPatternViewGraph(@PathVariable UUID patternViewId) {
+        Object graph = this.patternViewService.getGraphOfPatternView(patternViewId);
+
+        PatternViewGraphModel model = new PatternViewGraphModel();
+        if (null == graph) {
+            model.setGraph(this.objectMapper.createArrayNode());
+        } else {
+            model.setGraph(graph);
+        }
+        EntityModel<Object> entityModel = new EntityModel<>(model, linkTo(methodOn(PatternViewController.class).getPatternViewById(patternViewId)).withRel("patternView"),
+                linkTo(methodOn(PatternViewController.class).getPatternViewGraph(patternViewId)).withSelfRel()
+                        .andAffordance(afford(methodOn(PatternViewController.class).postPatternViewGraph(patternViewId, null)))
+                        .andAffordance(afford(methodOn(PatternViewController.class).putPatternViewGraph(patternViewId, null)))
+                        .andAffordance(afford(methodOn(PatternViewController.class).deletePatternViewGraph(patternViewId))));
+        return ResponseEntity.ok(entityModel);
+    }
+
+    @PostMapping(value = "/{patternViewId}/graph")
+    ResponseEntity<?> postPatternViewGraph(@PathVariable UUID patternViewId, @RequestBody Object graph) {
+        this.patternViewService.updateGraphOfPatternView(patternViewId, graph);
+        return ResponseEntity.created(linkTo(methodOn(PatternViewController.class).getPatternViewGraph(patternViewId)).toUri())
+                .build();
+    }
+
+    @PutMapping(value = "/{patternViewId}/graph")
+    ResponseEntity<?> putPatternViewGraph(@PathVariable UUID patternViewId, @RequestBody Object graph) {
+        this.patternViewService.updateGraphOfPatternView(patternViewId, graph);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping(value = "/{patternViewId}/graph")
+    ResponseEntity<?> deletePatternViewGraph(@PathVariable UUID patternViewId) {
+        this.patternViewService.deleteGraphOfPatternView(patternViewId);
         return ResponseEntity.noContent().build();
     }
 }
