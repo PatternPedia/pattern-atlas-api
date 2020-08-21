@@ -243,7 +243,7 @@ public class PatternController {
     }
 
     @GetMapping (value = "/patterns/search/findByUri")
-    EntityModel<Pattern> getPatternOfPatternLanguageByUri(@RequestParam String encodedUri) throws UnsupportedEncodingException {
+    EntityModel<Pattern> getPatternByUri(@RequestParam String encodedUri) throws UnsupportedEncodingException {
         String uri = URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString());
         Pattern pattern = this.patternService.getPatternByUri(uri);
         return new EntityModel<>(pattern, getPatternLinks(pattern));
