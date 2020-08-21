@@ -1,5 +1,8 @@
 package com.patternpedia.api.rest.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -238,6 +241,14 @@ public class PatternController {
 
         return links;
     }
+
+    @GetMapping (value = "/patterns/search/findByUri")
+    EntityModel<Pattern> getPatternOfPatternLanguageByUri(@RequestParam String encodedUri) throws UnsupportedEncodingException {
+        String uri = URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString());
+        Pattern pattern = this.patternService.getPatternByUri(uri);
+        return new EntityModel<>(pattern, getPatternLinks(pattern));
+    }
+
 
     @GetMapping(value = "/patternLanguages/{patternLanguageId}/patterns")
     CollectionModel<EntityModel<PatternModel>> getPatternsOfPatternLanguage(@PathVariable UUID patternLanguageId) {
