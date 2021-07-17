@@ -11,7 +11,7 @@ import io.github.patternatlas.api.entities.candidate.Candidate;
 @RepositoryRestResource(exported = false)
 public interface CandidateRepository extends JpaRepository<Candidate, UUID> {
 
-    Optional<Candidate> findByUri(String uri);
-
-    boolean existsByUri(String uri);
+    public Optional<Candidate> findByUri(String uri);
+    public boolean existsByUri(String uri);
+    public boolean existsByName(String name);
 }
